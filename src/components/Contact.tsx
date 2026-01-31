@@ -6,13 +6,33 @@ import { Button } from './Button';
 export const Contact: React.FC = () => {
   const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormStatus('submitting');
-    setTimeout(() => {
-      setFormStatus('success');
-      setTimeout(() => setFormStatus('idle'), 3000);
-    }, 1500);
+
+    const formData = new FormData(e.currentTarget);
+
+    try {
+      const response = await fetch("https://formsubmit.co/ajax/tejasnarula@gmail.com", {
+        method: "POST",
+        body: formData,
+        headers: { 
+            'Accept': 'application/json' 
+        }
+      });
+
+      if (response.ok) {
+        setFormStatus('success');
+        setTimeout(() => setFormStatus('idle'), 5000);
+      } else {
+        alert('Something went wrong. Please call us directly.');
+        setFormStatus('idle');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Network error. Please call us directly.');
+      setFormStatus('idle');
+    }
   };
 
   return (
@@ -61,31 +81,38 @@ export const Contact: React.FC = () => {
               <div className="bg-green-50 p-6 text-center">
                 <Check className="text-green-600 mx-auto mb-2" size={24} />
                 <p className="text-green-800 font-medium">Sent Successfully</p>
+                <p className="text-green-700 text-sm mt-2">We will get back to you shortly.</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
+                <input type="hidden" name="_subject" value="New Enquiry from Majestic Maths Website" />
+                <input type="hidden" name="_template" value="table" />
+                <input type="hidden" name="_captcha" value="false" />
+
                 <input 
                   required 
+                  name="name"
                   type="text" 
                   className="w-full px-4 py-3 bg-gray-50 border-0 focus:ring-1 focus:ring-amber-500 outline-none text-gray-900 placeholder-gray-500"
                   placeholder="Student Name"
                 />
                 <input 
                   required 
+                  name="phone"
                   type="tel" 
                   className="w-full px-4 py-3 bg-gray-50 border-0 focus:ring-1 focus:ring-amber-500 outline-none text-gray-900 placeholder-gray-500"
                   placeholder="Phone Number"
                 />
                 <div className="grid grid-cols-2 gap-4">
-                    <select className="w-full px-4 py-3 bg-gray-50 border-0 focus:ring-1 focus:ring-amber-500 outline-none text-gray-900">
-                      <option>Grade 7</option>
-                      <option>Grade 8</option>
-                      <option>Grade 9</option>
-                      <option>Grade 10</option>
+                    <select name="grade" className="w-full px-4 py-3 bg-gray-50 border-0 focus:ring-1 focus:ring-amber-500 outline-none text-gray-900">
+                      <option value="Grade 7">Grade 7</option>
+                      <option value="Grade 8">Grade 8</option>
+                      <option value="Grade 9">Grade 9</option>
+                      <option value="Grade 10">Grade 10</option>
                     </select>
-                    <select className="w-full px-4 py-3 bg-gray-50 border-0 focus:ring-1 focus:ring-amber-500 outline-none text-gray-900">
-                      <option>CBSE</option>
-                      <option>ICSE</option>
+                    <select name="board" className="w-full px-4 py-3 bg-gray-50 border-0 focus:ring-1 focus:ring-amber-500 outline-none text-gray-900">
+                      <option value="CBSE">CBSE</option>
+                      <option value="ICSE">ICSE</option>
                     </select>
                 </div>
 
@@ -95,7 +122,7 @@ export const Contact: React.FC = () => {
                   disabled={formStatus === 'submitting'}
                   className="mt-2"
                 >
-                  {formStatus === 'submitting' ? '...' : 'Send'}
+                  {formStatus === 'submitting' ? 'Sending...' : 'Send'}
                 </Button>
               </form>
             )}
